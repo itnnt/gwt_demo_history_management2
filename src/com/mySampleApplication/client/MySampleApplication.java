@@ -16,13 +16,13 @@ import com.google.gwt.user.client.ui.TabPanel;
  * Entry point classes define <code>onModuleLoad()</code>
  */
 public class MySampleApplication implements EntryPoint {
+    final TabPanel tabPanel = new TabPanel();
 
     /**
      * This is the entry point method.
      */
     public void onModuleLoad() {
         /* create a tab panel to carry multiple pages */
-        final TabPanel tabPanel = new TabPanel();
 
         /* create pages */
         HTML firstPage = new HTML("<h1>We are on first Page.</h1>");
@@ -38,6 +38,16 @@ public class MySampleApplication implements EntryPoint {
         tabPanel.add(firstPage, firstPageTitle);
         tabPanel.add(secondPage, secondPageTitle);
         tabPanel.add(thirdPage, thirdPageTitle);
+
+        /* If the application starts with no history token,
+         redirect to a pageIndex0 */
+        String initToken = History.getToken();
+
+        if (initToken.length() == 0) {
+            History.newItem("pageIndex0");
+            initToken = "pageIndex0";
+        }
+        tabPanel.setWidth("400");
 
         /* add tab selection handler */
         tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
@@ -60,29 +70,32 @@ public class MySampleApplication implements EntryPoint {
             @Override
             public void onValueChange(ValueChangeEvent<String> event) {
                 String historyToken = event.getValue();
-                /* parse the history token */
-                try {
-                    if (historyToken.substring(0, 9).equals("pageIndex")) {
-                        String tabIndexToken = historyToken.substring(9, 10);
-                        int tabIndex = Integer.parseInt(tabIndexToken);
-                        /* select the specified tab panel */
-                        tabPanel.selectTab(tabIndex);
-                    } else {
-                        tabPanel.selectTab(0);
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    tabPanel.selectTab(0);
-                }
+                selectTab(historyToken);
             }
         });
 
         /* select the first tab by default */
-        tabPanel.selectTab(0);
+        selectTab(initToken);
 
         /* add controls to RootPanel */
         RootPanel.get().add(tabPanel);
     }
 
+    private void selectTab(String historyToken) {
+        /* parse the history token */
+        try {
+            if (historyToken.substring(0, 9).equals("pageIndex")) {
+                String tabIndexToken = historyToken.substring(9, 10);
+                int tabIndex = Integer.parseInt(tabIndexToken);
+                /* select the specified tab panel */
+                tabPanel.selectTab(tabIndex);
+            } else {
+                tabPanel.selectTab(0);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            tabPanel.selectTab(0);
+        }
+    }
 }
 
 
